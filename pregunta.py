@@ -7,29 +7,24 @@ correctamente. Tenga en cuenta datos faltantes y duplicados.
 
 """
 import pandas as pd
-import numpy as np
+
 
 def clean_data():
 
     df = pd.read_csv("solicitudes_credito.csv", sep=";")
-    df.drop(['Unnamed: 0'], axis=1,inplace=True)
-    df.drop_duplicates(inplace=True)
-    df.dropna(axis=0,inplace=True)
-    
-    #Pre-procesamiento
-    df['monto_del_credito'] = df['monto_del_credito'].str.replace('$',"").str.replace(",","").str.replace(' ', '').astype(float)
-    df['tipo_de_emprendimiento']=df['tipo_de_emprendimiento'].astype(str)
-    df['tipo_de_emprendimiento']=df['tipo_de_emprendimiento'].str.lower()
-    df['sexo']=df['sexo'].str.lower()
-    df['idea_negocio'] = df['idea_negocio'].str.lower()
-    df['idea_negocio'] = df['idea_negocio'].str.replace(" ",'_').str.replace("-",'_')
-    df['comuna_ciudadano'] = df['comuna_ciudadano'].astype(float)
-    df['barrio'] = df['barrio'].str.lower().str.replace("-",' ').str.replace("_",' ')
-    df['fecha_de_beneficio'] = pd.to_datetime(df['fecha_de_beneficio'], infer_datetime_format=True)
-    df['línea_credito'] = df['línea_credito'].str.lower().str.replace(" ",'_').str.replace("-",'_')
-                                                                 
-    df.drop_duplicates(inplace=True)
-    df.dropna(axis=0, inplace=True)
-    
+    df.dropna(axis = 0, inplace = True)
+    df.drop_duplicates(inplace = True)
+    df=df.drop(['Unnamed: 0'], axis=1)
+    df[["sexo", "tipo_de_emprendimiento","idea_negocio","barrio","línea_credito"]]=df[["sexo", "tipo_de_emprendimiento","idea_negocio","barrio","línea_credito"]].apply(lambda x: x.astype(str).str.lower())
+    df=df.replace(to_replace="(_)|(-)",value=" ",regex=True)    
+    df=df.replace(to_replace="[,$]|(\.00$)",value="",regex=True)
+    df.monto_del_credito = df.monto_del_credito.astype("int")
+    df.comuna_ciudadano = df.comuna_ciudadano.astype("float")
+    df.fecha_de_beneficio = pd.to_datetime(df.fecha_de_beneficio,infer_datetime_format=True,errors='ignore',dayfirst=True)
+    df.fecha_de_beneficio = df.fecha_de_beneficio.dt.strftime("%Y/%m/%d")
+    df.drop_duplicates(inplace = True)
     return df
 
+
+if __name__ == "__main__":
+    clean_data()
